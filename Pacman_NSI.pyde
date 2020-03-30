@@ -12,9 +12,8 @@ TAILLE_CASE = 9
 with open("classement1.csv","r") as fichier :
     classement = []
     for ligne in fichier :
-        l = ligne.split(';')
-        l[0] = l[0].strip('\xef\xbb\xbf')
-        l[-1] = l[-1].strip('\n\r')
+        l = ligne.split(',')
+        l[-1] = l[-1].strip('\n')
         classement.append(l)
 with open("grille.csv", "r") as file :
     plateau = []
@@ -24,7 +23,7 @@ with open("grille.csv", "r") as file :
             l[i]=l[i].strip("\r\n")
         plateau.append(l)
 
-affichage = 'record battu'
+affichage = 'accueil'
 clic = ''
 
 le_plus_fort = 'fantome'
@@ -36,7 +35,7 @@ dir_poids = [1,1,1,1]
 nb_fantomes_mange = 0
 nb_pieces_mange = 0
 nb_pastilles_mange = 0
-
+choix_nom = ""
 
 def setup():
     global image_pacman,image_blinky,image_pinky,image_inky,image_clyde,image_fantomePeur,Pacman,Blinky,Pinky,Inky,Clyde,fantomes
@@ -69,8 +68,7 @@ def setup():
     
     
 def draw():
-    global affichage,grille
-    
+    global affichage,grille,score
     if affichage == 'accueil' :
         clic = ecran_titre()
         if clic == 'JOUER':
@@ -85,8 +83,9 @@ def draw():
             else :
                 jeu()
         else :
-            if score > classement[4][2] :
-                affichage == 'record battu'
+            if score > int(classement[4][2]) :
+                affichage = 'record battu'
+                attendre()
             else : 
                 affichage = 'gameover'
     
@@ -95,6 +94,7 @@ def draw():
         if clic == 'SUIVANT':
             record_battu()
             affichage = 'gameover'
+            attendre()
             
     elif affichage == 'gameover':
         clic = ecran_fin()
@@ -146,10 +146,10 @@ def jeu():
         retour_a_la_normale()
     
 
-# def attendre() :
-#     temps1 = millis()
-#     while (millis() < temps1 + 200) :
-#         pass    
+def attendre() :
+    temps1 = millis()
+    while (millis() < temps1 + 80) :
+        pass    
 
 def la_grille_est_vide(grille) :
     for i in range(len(grille)) :
@@ -164,7 +164,7 @@ def init() :
     le_plus_fort = "fantome"
     chrono = 0
     
-    pacman_est_vivant = True
+    Pacman["vivant"] = True
     Pacman["x"] = 43
     Pacman["y"] = 67
     Blinky["x"] = 40
@@ -178,12 +178,28 @@ def init() :
     grille = plateau
 
 def record_battu():
-    global score,nom,classement
-    for i in classment :
-        if score > i[2] :
-            rang = i[0]
-    classement[rang-1][1] = nom
+    global score,choix_nom,classement
+    rang = -1
+    for i in classement :
+        if score > int(i[2]) :
+            if rang == -1 :
+                rang = int(i[0])
+    for j in range(4,rang-1,-1):
+        classement[j] = classement[j-1][:]
+        classement[j][0] = j+1
+    print(classement)
+    classement[rang-1][1] = choix_nom
     classement[rang-1][2] = score
+    # classement[rang-1][3] = niveau
+    
+    with open("classement1.csv","w") as fichier :
+        for i in range(len(classement)):
+            ligne = str(classement[i][0])
+            for j in range(1,len(classement[i])):
+                ligne = ligne + "," + str(classement[i][j])
+            fichier.write(ligne+"\n")
+            
+
 
 # faire les écrans ( mort/record battu/pause)
 
@@ -201,6 +217,8 @@ def collision(pacman,fantome) :
     global le_plus_fort,score,nb_fantomes_mange
     if le_plus_fort == "fantome" :
         pacman["vie"] -= 1
+        pacman["x"] = 43
+        pacman["y"] = 67
         if pacman["vie"] == 0 :
             pacman["vivant"] = False
          
@@ -600,7 +618,7 @@ def ecran_fin() :
     return clic
 
 def ecran_record_battu():
-    global score,classement
+    global score,classement,choix_nom
     background(0)
     font = loadFont("04b30-48.vlw")
     textFont(font)
@@ -609,8 +627,8 @@ def ecran_record_battu():
     text("RECORD BATTU !!", width/2, 180)
     textSize(30)
     fill(255)
-    text("Bravo ! Vous avez battu un score ",width/2,height/2-50)
-    text("du classement. Entrez votre nom",width/2,height/2)
+    text("score : " + str(score),width/2,height/3+50)
+    text("Entrez votre nom",width/2,height/2)
     text("pour enregistrer votre score.",width/2,height/2+50)
     noFill()
     stroke(255)
@@ -618,11 +636,21 @@ def ecran_record_battu():
     textAlign(LEFT)
     textSize(22)
     text("Nom : " ,width/2-240,height/3*2+10)
+    text(choix_nom,width/2-150,height/3*2+10)
     textAlign(CENTER)
+    attendre()
+    if keyPressed :
+        if key == '\x08' :
+            choix_nom = choix_nom[:-1]
+        else :
+            choix_nom += key
+    
+    
     
     
     clic = ''
     if bouton(width-200,height-100,220,60,"SUIVANT",[100,232,132],[0,232,36]) :
         clic = 'SUIVANT'
+        
     return clic
         
