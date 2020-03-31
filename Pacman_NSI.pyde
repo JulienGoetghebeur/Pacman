@@ -39,7 +39,7 @@ nb_pieces_mange = 0
 nb_pastilles_mange = 0
 choix_nom = ""
 niveau = 0
-
+partie_en_cour = False
 
 
 def setup():
@@ -73,7 +73,7 @@ def setup():
     
     
 def draw():
-    global affichage,grille,score
+    global affichage,grille,score,partie_en_cour
     if affichage == 'accueil' :
         clic = ecran_titre()
         if clic == 'JOUER':
@@ -86,7 +86,11 @@ def draw():
             if la_grille_est_vide(grille) :
                 affichage = 'terminer'
             else :
-                jeu()
+                if partie_en_cour :
+                    jeu()
+                else :
+                    decompte()
+                    partie_en_cour = True
         else :
             if score > int(classement[4][2]) :
                 affichage = 'record battu'
@@ -99,7 +103,7 @@ def draw():
         if clic == 'SUIVANT':
             record_battu()
             affichage = 'gameover'
-            attendre()
+            attendre(500)
             
     elif affichage == 'gameover':
         clic = ecran_fin()
@@ -148,9 +152,9 @@ def jeu():
         retour_a_la_normale()
     
 
-def attendre() :
+def attendre(nb) :
     temps1 = millis()
-    while (millis() < temps1 + 80) :
+    while (millis() < temps1 + nb) :
         pass    
 
 def la_grille_est_vide(grille) :
@@ -161,10 +165,22 @@ def la_grille_est_vide(grille) :
     else :
         return True
 
-
+def decompte():
+    background(0)
+    print("noir")
+    afficher_grille(grille)
+    afficher_pacman(Pacman)
+    afficher_fantomes(fantomes)
+    
+    for i in range(3,0,-1):
+        fill(255,0,0)
+        textSize(40)
+        text(i,TAILLE_GRILLE[0]*TAILLE_CASE/2,TAILLE_GRILLE[1]*TAILLE_CASE/2)
+        print(i)                                                                             ##############
+        attendre(1000)
         
 def initialisation_debut() :
-    global le_plus_fort,score,chrono,nb_fantomes_mange, nb_pieces_mange,nb_pastilles_mange,Pacman,Blinky,Pinky,Inky,Clyde,grille,niveau
+    global le_plus_fort,score,chrono,nb_fantomes_mange, nb_pieces_mange,nb_pastilles_mange,Pacman,Blinky,Pinky,Inky,Clyde,grille,niveau,partie_en_cour
     le_plus_fort = "fantome"
     chrono = 0
     score = 0
@@ -186,6 +202,7 @@ def initialisation_debut() :
     grille = nouvelle_grille()
     niveau = 0
     Pacman["direction"] = "haut"
+    partie_en_cour = False
 
 def initialisation_niveau():
     global le_plus_fort,chrono,Pacman,Blinky,Pinky,Inky,Clyde,grille
@@ -677,7 +694,7 @@ def ecran_record_battu():
     text("Nom : " ,width/2-240,height/3*2+10)
     text(choix_nom,width/2-150,height/3*2+10)
     textAlign(CENTER)
-    attendre()
+    attendre(80)
     if keyPressed :
         if key == '\x08' :
             choix_nom = choix_nom[:-1]
