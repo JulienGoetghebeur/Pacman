@@ -185,6 +185,7 @@ def initialisation_debut() :
     Clyde["y"] = 43
     grille = nouvelle_grille()
     niveau = 0
+    Pacman["direction"] = "haut"
 
 def initialisation_niveau():
     global le_plus_fort,chrono,Pacman,Blinky,Pinky,Inky,Clyde,grille
@@ -201,6 +202,7 @@ def initialisation_niveau():
     grille = nouvelle_grille()
     chrono = 0
     le_plus_fort = "fantome"
+    Pacman["direction"] = "haut"
 
 def record_battu():
     global score,choix_nom,classement
@@ -243,6 +245,15 @@ def collision(pacman,fantome) :
         pacman["vie"] -= 1
         pacman["x"] = 43
         pacman["y"] = 67
+        pacman["direction"] = "haut"
+        Blinky["x"] = 40
+        Blinky["y"] = 40 
+        Pinky["x"] = 43
+        Pinky["y"] = 40
+        Inky["x"] = 40
+        Inky["y"] = 43
+        Clyde["x"] = 43
+        Clyde["y"] = 43
         if pacman["vie"] == 0 :
             pacman["vivant"] = False
          
@@ -530,8 +541,12 @@ def afficher_bande():
     textAlign(LEFT)
     clic = ''
     fill(255)
-    textSize(32)
-    text("score : "+ str(score) ,TAILLE_GRILLE[0]*TAILLE_CASE,50)
+    textSize(30)
+    text("score : "+ str(score) ,TAILLE_GRILLE[0]*TAILLE_CASE-10,50)
+    # nb de vie restante représenté par des icons pacman
+    for i in range(1,Pacman["vie"]+1):
+        image_pacman = loadImage("pacman.png")
+        image(image_pacman,TAILLE_GRILLE[0]*TAILLE_CASE+(i*40),150,32,32)
     # details des scores : nombres de piece , de pastille, et de fantomes mangé + nb de vies restantes + niveaux
     compteur_image = loadImage("compteur.png")
     image(compteur_image,TAILLE_GRILLE[0]*TAILLE_CASE+150,height/3+100,300,400)
