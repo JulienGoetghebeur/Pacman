@@ -15,27 +15,32 @@ with open("classement1.csv","r") as fichier :
         l = ligne.split(',')
         l[-1] = l[-1].strip('\n')
         classement.append(l)
-with open("grille.csv", "r") as file :
-    plateau = []
-    for ligne in file :
-        l = ligne.split(';')
-        for i in range(len(l)):
-            l[i]=l[i].strip("\r\n")
-        plateau.append(l)
+
+def nouvelle_grille():
+    with open("grille.csv", "r") as file :
+        plateau = []
+        for ligne in file :
+            l = ligne.split(';')
+            for i in range(len(l)):
+                l[i]=l[i].strip("\r\n")
+            plateau.append(l)
+    return plateau
 
 affichage = 'accueil'
 clic = ''
 
 le_plus_fort = 'fantome'
 score = 0
-grille = plateau
+grille = nouvelle_grille()
 chrono = 0
 direction_possible = ["haut", "bas", "droite", "gauche"]
-dir_poids = [1,1,1,1]
 nb_fantomes_mange = 0
 nb_pieces_mange = 0
 nb_pastilles_mange = 0
 choix_nom = ""
+niveau = 0
+
+
 
 def setup():
     global image_pacman,image_blinky,image_pinky,image_inky,image_clyde,image_fantomePeur,Pacman,Blinky,Pinky,Inky,Clyde,fantomes
@@ -100,11 +105,7 @@ def draw():
         clic = ecran_fin()
         if clic == 'REJOUER':
             affichage = 'jeu'
-            init()
-            score = 0
-            nb_fantomes_mange = 0
-            nb_pieces_mange = 0
-            nb_pastilles_mange = 0
+            initialisation_debut()
         elif clic == 'QUITTER':
             exit()
     
@@ -115,7 +116,8 @@ def draw():
     
     elif affichage == 'terminer'   :
         affichage = 'jeu'
-        init()
+        initialisation_niveau()
+        niveau += 1
 
 
 def jeu():
@@ -158,13 +160,19 @@ def la_grille_est_vide(grille) :
                 return False
     else :
         return True
+
+
         
-def init() :
-    global le_plus_fort,score,pacman_a_gagner,chrono,nb_fantomes_mange, nb_pieces_mange,nb_pastilles_mange,pacman_est_vivant,Pacman,Blinky,Pinky,Inky,Clyde
+def initialisation_debut() :
+    global le_plus_fort,score,chrono,nb_fantomes_mange, nb_pieces_mange,nb_pastilles_mange,Pacman,Blinky,Pinky,Inky,Clyde,grille,niveau
     le_plus_fort = "fantome"
     chrono = 0
-    
+    score = 0
+    nb_fantomes_mange = 0
+    nb_pieces_mange = 0
+    nb_pastilles_mange = 0
     Pacman["vivant"] = True
+    Pacman["vie"] = 3
     Pacman["x"] = 43
     Pacman["y"] = 67
     Blinky["x"] = 40
@@ -175,7 +183,24 @@ def init() :
     Inky["y"] = 43
     Clyde["x"] = 43
     Clyde["y"] = 43
-    grille = plateau
+    grille = nouvelle_grille()
+    niveau = 0
+
+def initialisation_niveau():
+    global le_plus_fort,chrono,Pacman,Blinky,Pinky,Inky,Clyde,grille
+    Pacman["x"] = 43
+    Pacman["y"] = 67
+    Blinky["x"] = 40
+    Blinky["y"] = 40 
+    Pinky["x"] = 43
+    Pinky["y"] = 40
+    Inky["x"] = 40
+    Inky["y"] = 43
+    Clyde["x"] = 43
+    Clyde["y"] = 43
+    grille = nouvelle_grille()
+    chrono = 0
+    le_plus_fort = "fantome"
 
 def record_battu():
     global score,choix_nom,classement
@@ -187,10 +212,9 @@ def record_battu():
     for j in range(4,rang-1,-1):
         classement[j] = classement[j-1][:]
         classement[j][0] = j+1
-    print(classement)
     classement[rang-1][1] = choix_nom
     classement[rang-1][2] = score
-    # classement[rang-1][3] = niveau
+    classement[rang-1][3] = niveau
     
     with open("classement1.csv","w") as fichier :
         for i in range(len(classement)):
