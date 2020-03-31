@@ -40,6 +40,7 @@ nb_pastilles_mange = 0
 choix_nom = ""
 niveau = 0
 partie_en_cour = False
+nb_fantome_mange = 0
 
 
 def setup():
@@ -168,11 +169,11 @@ def la_grille_est_vide(grille) :
 def decompte():
     background(0)
     print("noir")
-    afficher_grille(grille)
-    afficher_pacman(Pacman)
-    afficher_fantomes(fantomes)
     
     for i in range(3,0,-1):
+        afficher_grille(grille)
+        afficher_pacman(Pacman)
+        afficher_fantomes(fantomes)
         fill(255,0,0)
         textSize(40)
         text(i,TAILLE_GRILLE[0]*TAILLE_CASE/2,TAILLE_GRILLE[1]*TAILLE_CASE/2)
@@ -257,7 +258,7 @@ def record_battu():
 #####################################PERSONNAGES#######################################################################################################################################################
 
 def collision(pacman,fantome) :
-    global le_plus_fort,score,nb_fantomes_mange
+    global le_plus_fort,score,nb_fantome_mange
     if le_plus_fort == "fantome" :
         pacman["vie"] -= 1
         pacman["x"] = 43
@@ -275,10 +276,11 @@ def collision(pacman,fantome) :
             pacman["vivant"] = False
          
     elif le_plus_fort == "pacman" :
+        nb_fantome_mange += 1
         fantome["vivant"] = False
         fantome_respawn(fantome)
-        score += 200
-        nb_fantomes_mange += 1
+        score += (nb_fantome_mange+1)*100
+        
 
 def avancer_personnage(perso) :
     if passe_tunel(perso):
@@ -382,6 +384,7 @@ def case_occupe() :
 def pastille_mange() : 
     global le_plus_fort,Pacman,fantomes,chrono
     le_plus_fort = "pacman"
+    nb_fantome_mange = 0
     for i in fantomes :
         i["image"] = image_fantomePeur
     #     i["vitesse"] = 0.5                
