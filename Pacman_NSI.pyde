@@ -38,9 +38,10 @@ nb_fantomes_mange = 0
 nb_pieces_mange = 0
 nb_pastilles_mange = 0
 choix_nom = ""
-niveau = 0
+niveau = 1
 partie_en_cour = False
 nb_fantome_mange = 0
+prochain_virage = "aucun"
 
 
 def setup():
@@ -95,7 +96,7 @@ def draw():
         else :
             if score > int(classement[4][2]) :
                 affichage = 'record battu'
-                attendre()
+                attendre(500)
             else : 
                 affichage = 'gameover'
     
@@ -176,7 +177,7 @@ def decompte():
         afficher_fantomes(fantomes)
         fill(255,0,0)
         textSize(40)
-        text(i,TAILLE_GRILLE[0]*TAILLE_CASE/2,TAILLE_GRILLE[1]*TAILLE_CASE/2)
+        text(str(i),TAILLE_GRILLE[0]*TAILLE_CASE/2,TAILLE_GRILLE[1]*TAILLE_CASE/2)
         print(i)                                                                             ##############
         attendre(1000)
         
@@ -344,26 +345,34 @@ def passe_tunel(perso):
 #######PACMAN######
 
 def choix_direction():  
-    global Pacman
+    global Pacman, prochain_virage
     if keyPressed :
         if key == CODED:
             Pacman["vitesse"] = 1
             if keyCode == RIGHT:
-                if est_bloque_right(Pacman) == False :
-                    Pacman["direction"] = "droite"
-                    Pacman["image"] = loadImage("pacmandroite.gif")
+                prochain_virage = "droite"
             elif keyCode == LEFT :
-                if est_bloque_left(Pacman) == False :
-                    Pacman["direction"] = "gauche"
-                    Pacman["image"] = loadImage("pacmangauche.gif")
+                prochain_virage = "gauche"
             elif keyCode == UP :
-                if est_bloque_up(Pacman) == False :
-                    Pacman["direction"] = "haut"
-                    Pacman["image"] = loadImage("pacmanhaut.gif")
+                prochain_virage = "haut"
             elif keyCode == DOWN :
-                if est_bloque_down(Pacman) == False :
-                    Pacman["direction"] = "bas"
-                    Pacman["image"] = loadImage("pacmanbas.gif")
+                prochain_virage = "bas"
+    if prochain_virage == "droite" and est_bloque_right(Pacman) == False :
+        Pacman["direction"] = "droite"
+        Pacman["image"] = loadImage("pacmandroite.gif")
+        prochain_virage = "aucun"
+    elif prochain_virage == "gauche" and est_bloque_left(Pacman) == False :
+        Pacman["direction"] = "gauche"
+        Pacman["image"] = loadImage("pacmangauche.gif")
+        prochain_virage = "aucun"
+    elif prochain_virage == "haut" and est_bloque_up(Pacman) == False :
+        Pacman["direction"] = "haut"
+        Pacman["image"] = loadImage("pacmanhaut.gif")
+        prochain_virage = "aucun"
+    elif prochain_virage == "bas" and est_bloque_down(Pacman) == False :
+        Pacman["direction"] = "bas"
+        Pacman["image"] = loadImage("pacmanbas.gif")
+        prochain_virage = "aucun"
 
 def case_occupe() : 
     global grille,Pacman, score,nb_pieces_mange,nb_pastilles_mange
