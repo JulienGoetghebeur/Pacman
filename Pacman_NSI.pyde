@@ -1,10 +1,7 @@
 #                                     Le Pacman 
 #                        de Julien Goetghebeur et Evan Guyomarch
 #
-#  version 1.0   -->  jeu basique
-
 from random import choice
-
 
 TAILLE_GRILLE = (84,90)
 TAILLE_CASE = 9
@@ -28,24 +25,32 @@ def nouvelle_grille():
 
 affichage = 'accueil'
 clic = ''
+direction_possible = ["haut", "bas", "droite", "gauche"]
+choix_nom = ""
 
 le_plus_fort = 'fantome'
 score = 0
 grille = nouvelle_grille()
 chrono = 0
-direction_possible = ["haut", "bas", "droite", "gauche"]
 nb_fantomes_mange = 0
 nb_pieces_mange = 0
 nb_pastilles_mange = 0
-choix_nom = ""
 niveau = 1
 partie_en_cour = False
 nb_fantome_mange = 0
 prochain_virage = "aucun"
 
+font_ecriture = PFont()
+font_titre = PFont()
+
+
+
+
+
 
 def setup():
-    global image_pacman,image_blinky,image_pinky,image_inky,image_clyde,image_fantomePeur,Pacman,Blinky,Pinky,Inky,Clyde,fantomes
+    global regles2,compteur_image,image_pacman,image_blinky,image_pinky,image_inky,image_clyde,image_fantomePeur,Pacman,Blinky,Pinky,Inky,Clyde,fantomes,font_ecriture,font_titre,image_pacman_d,image_pacman_g,image_pacman_b,image_pacman_h,regles,logo
+    
     size(TAILLE_GRILLE[0]*TAILLE_CASE+300,TAILLE_GRILLE[1]*TAILLE_CASE)
     frameRate(10)
     background(255)
@@ -53,6 +58,15 @@ def setup():
     textAlign(CENTER)
     imageMode(CENTER)
     noStroke()
+    
+    regles = loadImage("regle-pacman2.png")
+    logo = loadImage("pacman-logo.jpg")
+    image_pacman = loadImage("pacman.png")
+    compteur_image = loadImage("compteur.png")
+    regles2 = loadImage("regle-pacman3.png")
+    
+    font_ecriture = loadFont("04b30-48.vlw")
+    font_titre = createFont("PAC-FONT.TTF",48)
     
     image_pacman_d = loadImage("pacmandroite.gif")
     image_pacman_g = loadImage("pacmangauche.gif")
@@ -73,9 +87,11 @@ def setup():
     fantomes = [Blinky, Pinky, Inky, Clyde]
     
     
+
     
 def draw():
-    global affichage,grille,score,partie_en_cour
+    global affichage, grille,score, partie_en_cour, niveau
+    
     if affichage == 'accueil' :
         clic = ecran_titre()
         if clic == 'JOUER':
@@ -86,12 +102,13 @@ def draw():
     elif affichage == 'jeu':
         if Pacman["vivant"] :
             if la_grille_est_vide(grille) :
-                affichage = 'terminer'
+                initialisation_niveau()
+                niveau += 1
             else :
                 if partie_en_cour :
                     jeu()
                 else :
-                    decompte()
+                    # decompte()
                     partie_en_cour = True
         else :
             if score > int(classement[4][2]) :
@@ -119,11 +136,10 @@ def draw():
         clic = ecran_pause()
         if clic == 'REPRENDRE' :
             affichage = 'jeu'
-    
-    elif affichage == 'terminer'   :
-        affichage = 'jeu'
-        initialisation_niveau()
-        niveau += 1
+        elif clic == 'QUITTER' :
+            exit()
+
+
 
 
 def jeu():
@@ -152,7 +168,13 @@ def jeu():
     
     if chrono + 10000 <= millis():
         retour_a_la_normale()
-    
+
+
+
+
+
+
+
 
 def attendre(nb) :
     temps1 = millis()
@@ -160,6 +182,9 @@ def attendre(nb) :
         pass    
 
 def la_grille_est_vide(grille) :
+    """
+    Verifie si il reste des pièces/pastilles sur la grille.
+    """
     for i in range(len(grille)) :
         for j in grille[i]:
             if j == "1" or j == "5" :
@@ -168,9 +193,10 @@ def la_grille_est_vide(grille) :
         return True
 
 def decompte():
-    background(0)
-    print("noir")
-    
+    """
+    Affiche 3,2,1 à l'écran avant que la partie commence.
+    """
+    background(0)    
     for i in range(3,0,-1):
         afficher_grille(grille)
         afficher_pacman(Pacman)
@@ -178,10 +204,15 @@ def decompte():
         fill(255,0,0)
         textSize(40)
         text(str(i),TAILLE_GRILLE[0]*TAILLE_CASE/2,TAILLE_GRILLE[1]*TAILLE_CASE/2)
-        print(i)                                                                             ##############
         attendre(1000)
         
 def initialisation_debut() :
+    """
+    Réinitialise les variables nécessaires à une nouvelle partie.
+    - met les scores et les compteur a zéro
+    - fait respawn tout les personnages
+    - remplace la grille
+    """
     global le_plus_fort,score,chrono,nb_fantomes_mange, nb_pieces_mange,nb_pastilles_mange,Pacman,Blinky,Pinky,Inky,Clyde,grille,niveau,partie_en_cour
     le_plus_fort = "fantome"
     chrono = 0
@@ -207,6 +238,11 @@ def initialisation_debut() :
     partie_en_cour = False
 
 def initialisation_niveau():
+    """
+    réinitialise les variables nécessaire à un nouveau niveau
+    - les personnages retourne au positions de départ
+    - la grille est remplacer
+    """
     global le_plus_fort,chrono,Pacman,Blinky,Pinky,Inky,Clyde,grille
     Pacman["x"] = 43
     Pacman["y"] = 67
@@ -224,6 +260,11 @@ def initialisation_niveau():
     Pacman["direction"] = "haut"
 
 def record_battu():
+    """
+    Fonction appelé lorsque le joueur bat un record du classement.
+    - détermine le record battu
+    - modifie le classement et l'écrit sur le document : "classement1.csv"
+    """
     global score,choix_nom,classement
     rang = -1
     for i in classement :
@@ -243,22 +284,17 @@ def record_battu():
             for j in range(1,len(classement[i])):
                 ligne = ligne + "," + str(classement[i][j])
             fichier.write(ligne+"\n")
-            
-
-
-# faire les écrans ( mort/record battu/pause)
-
-# faire avancer les fantomes  /  detecter un carrefour puis choisir une direction avec probabilité plus élever d'aller vers le pacman --> calculer le vecteur  JULIEN
-
-# faire le classement et les scores --> presque fini il manque un ecran de record battu ou on peut rentrer son nom pour le sauvgarder dans le classement --> a prendre sur mon snake JULIEN
-
-# faire un sorte de "hitbox" pour les perso pour ameliorer collision()  EVAN
 
 
 
 #####################################PERSONNAGES#######################################################################################################################################################
 
 def collision(pacman,fantome) :
+    """
+    Fonction qui est appelé lorsqu'il y a une collision entre un fantome et un pacman.
+    - soit le pacman mange le fantome et il gagne des points
+    - soit il meurt et tout les personnages respawn.
+    """
     global le_plus_fort,score,nb_fantome_mange
     if le_plus_fort == "fantome" :
         pacman["vie"] -= 1
@@ -284,6 +320,9 @@ def collision(pacman,fantome) :
         
 
 def avancer_personnage(perso) :
+    """
+    Fonction qui fait avancer le personnage.
+    """
     if passe_tunel(perso):
         if perso["direction"] == "droite" :
             perso["x"] = 5
@@ -301,6 +340,9 @@ def avancer_personnage(perso) :
             perso["x"] = perso["x"] - perso["vitesse"]
 
 def est_bloque_front(perso):
+    """
+    Détecte si il y a un mur devant le personnage.
+    """
     if perso["direction"] == "haut" and est_bloque_up(perso) :
         return True
     elif perso["direction"] == "bas" and est_bloque_down(perso) :
@@ -313,30 +355,45 @@ def est_bloque_front(perso):
         return False
 
 def est_bloque_up(perso):
+    """
+    Détecte si il y a un mur au dessus du personnage.
+    """
     if grille[perso["y"]-2][perso["x"]-1] ==  "10" or grille[perso["y"]-2][perso["x"]] ==  "10" or grille[perso["y"]-2][perso["x"]+1] ==  "10" :
         return True
     else :
         return False
 
 def est_bloque_right(perso):
+    """
+    Détecte si il y a un mur a droite du personage
+    """
     if grille[perso["y"]-1][perso["x"]+2] ==  "10" or grille[perso["y"]][perso["x"]+2] ==  "10" or grille[perso["y"]+1][perso["x"]+2] ==  "10" :
         return True
     else :
         return False
 
 def est_bloque_left(perso):
+    """
+    Détecte si il y a un mur à gauche du personnage.
+    """
     if grille[perso["y"]-1][perso["x"]-2] ==  "10" or grille[perso["y"]][perso["x"]-2] ==  "10" or grille[perso["y"]+1][perso["x"]-2] ==  "10":
         return True
     else :
         return False
 
 def est_bloque_down(perso):
+    """
+    Détecte si il y a un mur en dessous du personnage.
+    """
     if grille[perso["y"]+2][perso["x"]-1] ==  "10" or grille[perso["y"]+2][perso["x"]] ==  "10" or grille[perso["y"]+2][perso["x"]+1] ==  "10" :
         return True
     else :
         return False
 
 def passe_tunel(perso):
+    """
+    Détecte si le pacman passe dans un tunel (sur les cotés de la grille)
+    """
     if grille[perso["y"]][perso["x"]] == "2":
         return True
     else : 
@@ -345,7 +402,13 @@ def passe_tunel(perso):
 #######PACMAN######
 
 def choix_direction():  
-    global Pacman, prochain_virage
+    """
+    Fonction qui permet au joueur de changer la direction du pacmen.
+    - avec les flèches du clavier
+    - enregistre la direction voulu puis regarde si le pacman peut tourner
+    - sinon garde la direction en mémoire pour que le pacman tourne après ce qui permet de facilité la tâche au joueur.
+    """
+    global Pacman, prochain_virage,image_pacman_d,image_pacman_g,image_pacman_b,image_pacman_h
     if keyPressed :
         if key == CODED:
             Pacman["vitesse"] = 1
@@ -359,22 +422,28 @@ def choix_direction():
                 prochain_virage = "bas"
     if prochain_virage == "droite" and est_bloque_right(Pacman) == False :
         Pacman["direction"] = "droite"
-        Pacman["image"] = loadImage("pacmandroite.gif")
+        Pacman["image"] = image_pacman_d
         prochain_virage = "aucun"
     elif prochain_virage == "gauche" and est_bloque_left(Pacman) == False :
         Pacman["direction"] = "gauche"
-        Pacman["image"] = loadImage("pacmangauche.gif")
+        Pacman["image"] = image_pacman_g
         prochain_virage = "aucun"
     elif prochain_virage == "haut" and est_bloque_up(Pacman) == False :
         Pacman["direction"] = "haut"
-        Pacman["image"] = loadImage("pacmanhaut.gif")
+        Pacman["image"] = image_pacman_h
         prochain_virage = "aucun"
     elif prochain_virage == "bas" and est_bloque_down(Pacman) == False :
         Pacman["direction"] = "bas"
-        Pacman["image"] = loadImage("pacmanbas.gif")
+        Pacman["image"] = image_pacman_b
         prochain_virage = "aucun"
 
 def case_occupe() : 
+    """
+    Fonction qui agit en fonction de la case sur laquelle se trouve le pacman
+    - regarde si il est sur une pièce ou une pastille
+    - si oui, augmente le score et le compteur
+    - transforme la case en couloir vide
+    """
     global grille,Pacman, score,nb_pieces_mange,nb_pastilles_mange
     if grille[Pacman["y"]][Pacman["x"]] == "1" :
         score += 25
@@ -387,23 +456,29 @@ def case_occupe() :
         pastille_mange() 
         grille[Pacman["y"]][Pacman["x"]] = "0"
 
-    elif grille[Pacman["y"]][Pacman["x"]] == "0":
-        pass
-
 def pastille_mange() : 
-    global le_plus_fort,Pacman,fantomes,chrono
+    """
+    Fonction qui est appelé lorsque le pacman mange une pastille.
+    - le pacman devient le plus fort
+    - les fantomes changent d'aparance
+    - le compteur de fantome mangé est remis a 0 (est utilisé pour le nombre de point gagné)
+    """
+    global le_plus_fort,fantomes,chrono,image_fantomePeur,nb_fantome_mange
     le_plus_fort = "pacman"
     nb_fantome_mange = 0
     for i in fantomes :
         i["image"] = image_fantomePeur
-    #     i["vitesse"] = 0.5                
-    # Pacman["vitesse"] = 1.5
     chrono = millis()
 
 ########FANTOMES#########
 
 def retour_a_la_normale():
-    global le_plus_fort 
+    """
+    Fonction appelé lorsque la pastille ne fais plus d'effet.
+    - les fantomes redeviennent les plus forts
+    - et reprennent leurs aparances normales
+    """
+    global le_plus_fort ,image_clyde,image_inky,image_pinky,image_blinky
     le_plus_fort = "fantome"
     Blinky["image"] = image_blinky
     Pinky["image"] = image_pinky
@@ -411,6 +486,16 @@ def retour_a_la_normale():
     Clyde["image"] = image_clyde
 
 def deplacement_fantomes():
+    """
+    Fonction qui fais s'occupe du déplacement des fantomes.
+    - calcule le vecteur entre le fantome et le pacman
+    - lorsque le fantome arrive a un carrefour, il choisi une direction
+    - plus le fantome est proche du pacman, plus la probabilité qu'il choisisse sa direction est élevée :
+        * entre 50 et 30 cases de distance -> 1 chance de plus d'aller vers le pacman
+        * entre 30 et 20 -> 2 chances de plus
+        * entre 20 et 10 -> 3 chances de plus 
+        * moins de 10 -> 5 chances de plus
+    """
     global fantomes,dir_poids,direction_possible
     for f in fantomes :
         direction_possible = ["haut", "bas", "droite", "gauche"]
@@ -463,10 +548,13 @@ def deplacement_fantomes():
             
         avancer_personnage(f)
 
-def fantome_respawn(fant) :
-    fant["x"] = 40
-    fant["y"] = 40
-    fant["vivant"] = True
+def fantome_respawn(f) :
+    """
+    Fonction qui ramène le fantome au coordonnées de départ (40,40).
+    """
+    f["x"] = 40
+    f["y"] = 40
+    f["vivant"] = True
 
 
 
@@ -474,7 +562,7 @@ def fantome_respawn(fant) :
 
 def afficher_grille(grille):
     """
-    Fonction qui affiche la grille et les personnages.
+    Fonction qui affiche la grille
     """
     pastille = []
     for i in range(len(grille)) :
@@ -489,9 +577,9 @@ def afficher_grille(grille):
                 afficher_couloir(x,y)
             elif grille[i][j] == "5":
                 pastille.append((x,y))
-                
+# pour que les pastilles s'affiche en dernier, pour pas être recouvert par les autres cases--> le rond est plus grand que une case, ce qui n'est pas le cas de la pièce        
     for coord in pastille :
-        afficher_pastille(coord[0],coord[1]) # pour que les pastilles s'affiche en dernier pour pas etre recouvert par les autres cases
+        afficher_pastille(coord[0],coord[1]) 
     
 def afficher_mur(x,y):
     """
@@ -509,7 +597,7 @@ def afficher_couloir(x,y):
     
 def afficher_piece(x,y):
     """
-    Affiche un carré bleu avec un rond bleu dessus pour représenter un couloir avec une pièce.
+    Affiche un carré bleu avec un rond blanc dessus pour représenter un couloir avec une pièce.
     """
     afficher_couloir(x,y)
     noStroke()
@@ -518,7 +606,7 @@ def afficher_piece(x,y):
 
 def afficher_pastille(x,y):
     """
-    Affiche un carré bleu avec un rand orange pour représenter un couloir avec une pastille.
+    Affiche un carré bleu avec un rond orange pour représenter un couloir avec une pastille.
     """
     afficher_couloir(x,y)
     noStroke()
@@ -527,20 +615,16 @@ def afficher_pastille(x,y):
 
 def afficher_pacman(p):
     """
-    Affiche l'image pacman (ou rond jaune).
+    Affiche l'image pacman.
     """
     image(p["image"],p["x"]*TAILLE_CASE+TAILLE_CASE/2,p["y"]*TAILLE_CASE+TAILLE_CASE/2)
-    # fill(255,255,0)
-    # circle(p["x"]*TAILLE_CASE+TAILLE_CASE/2,p["y"]*TAILLE_CASE+TAILLE_CASE/2,22)
 
 def afficher_fantomes(f):
     """
-    Affiche l'image correspondante a chaque fantôme (ou rond rouge).
+    Affiche l'image correspondante à chaque fantôme.
     """
     for i in f :
         image(i["image"],i["x"]*TAILLE_CASE+TAILLE_CASE/2,i["y"]*TAILLE_CASE+TAILLE_CASE/2)
-        # fill(255,0,0)
-        # circle(i["x"]*TAILLE_CASE+TAILLE_CASE/2,i["y"]*TAILLE_CASE+TAILLE_CASE/2,22)
 
 def bouton(x,y,largeur,hauteur,texte,couleur,couleur2):
     """
@@ -566,49 +650,55 @@ def bouton(x,y,largeur,hauteur,texte,couleur,couleur2):
     return False
 
 def afficher_bande():
-    global score,classement
+    """
+    Fonction qui affiche le bandeau qui se trouve sur le côté de la fenêtre.
+    - bouton QUITTER et PAUSE
+    - indique le score et les détails
+    - indique le nombre de vies restantes
+    - les règles
+    """
+    global score,classement,image_pacman,compteur_image,regles2
     textAlign(LEFT)
     clic = ''
+# Score
     fill(255)
     textSize(30)
     text("score : "+ str(score) ,TAILLE_GRILLE[0]*TAILLE_CASE-10,50)
-    # nb de vie restante représenté par des icons pacman
-    for i in range(1,Pacman["vie"]+1):
-        image_pacman = loadImage("pacman.png")
-        image(image_pacman,TAILLE_GRILLE[0]*TAILLE_CASE+(i*40),150,32,32)
     # details des scores : nombres de piece , de pastille, et de fantomes mangé + nb de vies restantes + niveaux
-    compteur_image = loadImage("compteur.png")
     image(compteur_image,TAILLE_GRILLE[0]*TAILLE_CASE+150,height/3+100,300,400)
     textSize(24)
     text(str(nb_pastilles_mange),TAILLE_GRILLE[0]*TAILLE_CASE+125,height/3-47)
     text(str(nb_pieces_mange),TAILLE_GRILLE[0]*TAILLE_CASE+125,height/3-7)
-    text(str(nb_fantomes_mange),TAILLE_GRILLE[0]*TAILLE_CASE+125,height/3+33)
-    regles2 = loadImage("regle-pacman3.png")
+    text(str(nb_fantome_mange),TAILLE_GRILLE[0]*TAILLE_CASE+125,height/3+33)
+# nb de vie restante représenté par des icons pacman
+    for i in range(1,Pacman["vie"]+1):
+        image(image_pacman,TAILLE_GRILLE[0]*TAILLE_CASE+(i*40),150,32,32)
+# Règles
     image(regles2,TAILLE_GRILLE[0]*TAILLE_CASE+150,width/2+50,300,400)
     textAlign(CENTER)
+# Boutons
     if bouton(TAILLE_GRILLE[0]*TAILLE_CASE+150,height-145,250,50,"PAUSE",[100,100,255],[0,0,255]):
         clic = 'PAUSE'
     if bouton(TAILLE_GRILLE[0]*TAILLE_CASE+150,height-75,250,50,"QUITTER",[255,100,100],[255,0,0]):
         clic = 'QUITTER'
     return clic
 
-def ecran_titre():#    a ajouter :  fond  /  police 
-    global classement
+def ecran_titre():
+    global classement,font_titre,font_ecriture,regles,logo
     """
     Affiche l'écran d'accueil du jeu.
     -Propose de jouer ou de quitter
-    -Affiche le classement des scores 
+    -Affiche le classement 
     -affiche les règles
     """
     background(0)
     clic = ''
-    font = createFont("PAC-FONT.TTF",48)
-    textFont(font)
+# Titre
+    textFont(font_titre)
     textSize(90)
     fill(255,255,0)
     text("pac-man",width/2,180)
-    font = loadFont("04b30-48.vlw")
-    textFont(font)
+    textFont(font_ecriture)
 # Boutons
     stroke(0,232,36)
     if bouton(200,height-100,220,60,'JOUER',[100,232,132],[0,232,36]):
@@ -619,38 +709,38 @@ def ecran_titre():#    a ajouter :  fond  /  police
 # tableau des score
     textAlign(LEFT)
     rectMode(CORNER)
-    # fill(222,204,68)
     fill(255)
     for i in range(len(classement)) :
         text(classement[i][0],width/2-50,height/2+i*50)# numéro
         text(classement[i][1],width/2,height/2+i*50)# prénom
         text(classement[i][2],width/2+250,height/2+i*50)# score
-        text(classement[i][3],width/2+400,height/2+i*50)# niveau
+        text(classement[i][3],width/2+450,height/2+i*50)# niveau
 # règles
-    regles = loadImage("regle-pacman2.png")
     image(regles,220,height/2+30,330,400)
 #logo
-    logo = loadImage("pacman-logo.jpg")
     image(logo,width/2,height/2-90,300,100)
-    
     textAlign(CENTER)
     rectMode(CENTER)
-     
     return clic
 
 def ecran_pause():
+    """
+    Fonction qui affiche un écran de pause sur la grille de jeu.
+    - boutons QUITTER et CONTINUER
+    """
     fill(255,0,0)
     text("PAUSE",width/2,height/2)
 
 def ecran_fin() :
     """
-    Affiche l'écran d'accueil du jeu.
-    -Propose de jouer ou de quitter
-    -Affiche le classement des scores 
-    -affiche les règles
+    Fonction qui affiche un écran de fin de partie.
+    - Affiche le score
+    - affiche le classement
+    - boutons QUITTER et REJOUER
     """
     background(0)
     clic = ''
+# Titre
     textSize(90)
     fill(255)
     text("GAME OVER",width/2,180)
@@ -677,7 +767,7 @@ def ecran_fin() :
         text(classement[i][0],width/2-50,height/2+i*50)# numéro
         text(classement[i][1],width/2,height/2+i*50)# prénom
         text(classement[i][2],width/2+250,height/2+i*50)# score
-        text(classement[i][3],width/2+400,height/2+i*50)# niveau
+        text(classement[i][3],width/2+450,height/2+i*50)# niveau
     
     textAlign(CENTER)
     rectMode(CENTER)
@@ -686,10 +776,15 @@ def ecran_fin() :
     return clic
 
 def ecran_record_battu():
-    global score,classement,choix_nom
+    """
+    Fonction qui affiche l'écran de record battu.
+    - permet d'entrer son nom pour le sauvegarder dans le classement
+    - bouton SUIVANT
+    """
+    global score,classement,choix_nom,font_ecriture
     background(0)
-    font = loadFont("04b30-48.vlw")
-    textFont(font)
+# Écritures
+    textFont(font_ecriture)
     textSize(80)
     fill(255,255,0)
     text("RECORD BATTU !!", width/2, 180)
@@ -698,6 +793,7 @@ def ecran_record_battu():
     text("score : " + str(score),width/2,height/3+50)
     text("Entrez votre nom",width/2,height/2)
     text("pour enregistrer votre score.",width/2,height/2+50)
+# Case pour entrer le nom
     noFill()
     stroke(255)
     rect(width/2,height/3*2,500,50,7)
@@ -712,10 +808,7 @@ def ecran_record_battu():
             choix_nom = choix_nom[:-1]
         else :
             choix_nom += key
-    
-    
-    
-    
+# Bouton
     clic = ''
     if bouton(width-200,height-100,220,60,"SUIVANT",[100,232,132],[0,232,36]) :
         clic = 'SUIVANT'
