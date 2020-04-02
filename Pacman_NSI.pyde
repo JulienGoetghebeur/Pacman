@@ -39,6 +39,7 @@ niveau = 1
 partie_en_cour = False
 nb_fantome_mange = 0
 prochain_virage = "aucun"
+decompte = 4
 
 font_ecriture = PFont()
 font_titre = PFont()
@@ -90,7 +91,7 @@ def setup():
 
     
 def draw():
-    global affichage, grille,score, partie_en_cour, niveau
+    global affichage, grille,score, partie_en_cour, niveau, decompte
     
     if affichage == 'accueil' :
         clic = ecran_titre()
@@ -108,8 +109,9 @@ def draw():
                 if partie_en_cour :
                     jeu()
                 else :
-                    # decompte()
-                    partie_en_cour = True
+                    if decompte != 4 and decompte != 0  :
+                        attendre(1000)
+                    compte_a_rebourd()
         else :
             if score > int(classement[4][2]) :
                 affichage = 'record battu'
@@ -174,7 +176,18 @@ def jeu():
 
 
 
-
+def compte_a_rebourd():
+    global decompte,partie_en_cour
+    decompte -= 1
+    background(0)
+    afficher_grille(grille)
+    afficher_pacman(Pacman)
+    afficher_fantomes(fantomes)
+    fill(255,0,0)
+    textSize(40)
+    text(str(decompte),TAILLE_GRILLE[0]*TAILLE_CASE/2,TAILLE_GRILLE[1]*TAILLE_CASE/2)
+    if decompte == 0:
+        partie_en_cour = True
 
 def attendre(nb) :
     temps1 = millis()
@@ -191,20 +204,6 @@ def la_grille_est_vide(grille) :
                 return False
     else :
         return True
-
-def decompte():
-    """
-    Affiche 3,2,1 à l'écran avant que la partie commence.
-    """
-    background(0)    
-    for i in range(3,0,-1):
-        afficher_grille(grille)
-        afficher_pacman(Pacman)
-        afficher_fantomes(fantomes)
-        fill(255,0,0)
-        textSize(40)
-        text(str(i),TAILLE_GRILLE[0]*TAILLE_CASE/2,TAILLE_GRILLE[1]*TAILLE_CASE/2)
-        attendre(1000)
         
 def initialisation_debut() :
     """
@@ -213,7 +212,7 @@ def initialisation_debut() :
     - fait respawn tout les personnages
     - remplace la grille
     """
-    global le_plus_fort,score,chrono,nb_fantomes_mange, nb_pieces_mange,nb_pastilles_mange,Pacman,Blinky,Pinky,Inky,Clyde,grille,niveau,partie_en_cour
+    global le_plus_fort,score,chrono,nb_fantomes_mange, nb_pieces_mange,nb_pastilles_mange,Pacman,Blinky,Pinky,Inky,Clyde,grille,niveau,partie_en_cour,decompte
     le_plus_fort = "fantome"
     chrono = 0
     score = 0
@@ -224,18 +223,19 @@ def initialisation_debut() :
     Pacman["vie"] = 3
     Pacman["x"] = 43
     Pacman["y"] = 67
-    Blinky["x"] = 40
+    Blinky["x"] = 37
     Blinky["y"] = 40 
-    Pinky["x"] = 43
+    Pinky["x"] = 46
     Pinky["y"] = 40
-    Inky["x"] = 40
+    Inky["x"] = 37
     Inky["y"] = 43
-    Clyde["x"] = 43
+    Clyde["x"] = 46
     Clyde["y"] = 43
     grille = nouvelle_grille()
     niveau = 0
     Pacman["direction"] = "haut"
     partie_en_cour = False
+    decompte = 4
 
 def initialisation_niveau():
     """
@@ -246,13 +246,13 @@ def initialisation_niveau():
     global le_plus_fort,chrono,Pacman,Blinky,Pinky,Inky,Clyde,grille
     Pacman["x"] = 43
     Pacman["y"] = 67
-    Blinky["x"] = 40
+    Blinky["x"] = 37
     Blinky["y"] = 40 
-    Pinky["x"] = 43
+    Pinky["x"] = 46
     Pinky["y"] = 40
-    Inky["x"] = 40
+    Inky["x"] = 37
     Inky["y"] = 43
-    Clyde["x"] = 43
+    Clyde["x"] = 46
     Clyde["y"] = 43
     grille = nouvelle_grille()
     chrono = 0
@@ -301,13 +301,13 @@ def collision(pacman,fantome) :
         pacman["x"] = 43
         pacman["y"] = 67
         pacman["direction"] = "haut"
-        Blinky["x"] = 40
+        Blinky["x"] = 37
         Blinky["y"] = 40 
-        Pinky["x"] = 43
+        Pinky["x"] = 46
         Pinky["y"] = 40
-        Inky["x"] = 40
+        Inky["x"] = 37
         Inky["y"] = 43
-        Clyde["x"] = 43
+        Clyde["x"] = 46
         Clyde["y"] = 43
         if pacman["vie"] == 0 :
             pacman["vivant"] = False
@@ -723,52 +723,95 @@ def ecran_titre():
     rectMode(CENTER)
     return clic
 
+# def ecran_pause():
+#     """
+#     Fonction qui affiche un écran de pause sur la grille de jeu.
+#     - boutons QUITTER et CONTINUER
+#     """
+#     fill(255,0,0)
+#     text("PAUSE",width/2,height/2)
+
+# def ecran_fin() :
+#     """
+#     Fonction qui affiche un écran de fin de partie.
+#     - Affiche le score
+#     - affiche le classement
+#     - boutons QUITTER et REJOUER
+#     """
+#     background(0)
+#     clic = ''
+# # Titre
+#     textSize(90)
+#     fill(255)
+#     text("GAME OVER",width/2,180)
+# # Boutons
+#     stroke(0,232,36)
+#     if bouton(200,height-130,220,60,'REJOUER',[100,232,132],[0,232,36]) ==True:
+#         clic = 'REJOUER'
+#     stroke(255,0,0)
+#     if bouton(800,height-130,220,60,'QUITTER',[255,100,100],[255,0,0]) == True :
+#         clic = 'QUITTER'
+# # tableau des score
+#     textAlign(LEFT)
+#     rectMode(CORNER)
+    
+#     fill(0)
+#     stroke(0)
+#     fill(20,0,255)
+#     rect(width/3-50,height/3,500,350,30)
+#     fill(255,255,20)
+#     text("tableau des scores",width/2-190,height/2-150)
+    
+#     fill(255)
+#     for i in range(len(classement)) :
+#         text(classement[i][0],width/2-50,height/2+i*50)# numéro
+#         text(classement[i][1],width/2,height/2+i*50)# prénom
+#         text(classement[i][2],width/2+250,height/2+i*50)# score
+#         text(classement[i][3],width/2+450,height/2+i*50)# niveau
+    
+#     textAlign(CENTER)
+#     rectMode(CENTER)
+#     noStroke()
+
+#     return clic
 def ecran_pause():
-    """
-    Fonction qui affiche un écran de pause sur la grille de jeu.
-    - boutons QUITTER et CONTINUER
-    """
+    global clic
+    fill(50,50,255)
+    stroke(20)
+    rect(width/2-150,height/2,400,400,30)
     fill(255,0,0)
-    text("PAUSE",width/2,height/2)
+    noStroke()
+    text("PAUSE",width/2-150,height/2)
+    if bouton(width/2-150,height/2+100,270,60,'REPRENDRE',[100,232,132],[0,232,36]):
+        clic = 'JOUER'
+        affichage = "jeu"
+        return clic
 
 def ecran_fin() :
-    """
-    Fonction qui affiche un écran de fin de partie.
-    - Affiche le score
-    - affiche le classement
-    - boutons QUITTER et REJOUER
-    """
+
     background(0)
     clic = ''
-# Titre
     textSize(90)
     fill(255)
     text("GAME OVER",width/2,180)
 # Boutons
     stroke(0,232,36)
-    if bouton(200,height-130,220,60,'REJOUER',[100,232,132],[0,232,36]) ==True:
+    if bouton(150,height-400,220,60,'REJOUER',[100,232,132],[0,232,36]) ==True:
         clic = 'REJOUER'
     stroke(255,0,0)
-    if bouton(800,height-130,220,60,'QUITTER',[255,100,100],[255,0,0]) == True :
+    if bouton(150,height-200,220,60,'QUITTER',[255,100,100],[255,0,0]) == True :
         clic = 'QUITTER'
 # tableau des score
     textAlign(LEFT)
     rectMode(CORNER)
-    
+
     fill(0)
     stroke(0)
     fill(20,0,255)
     rect(width/3-50,height/3,500,350,30)
     fill(255,255,20)
     text("tableau des scores",width/2-190,height/2-150)
-    
-    fill(255)
-    for i in range(len(classement)) :
-        text(classement[i][0],width/2-50,height/2+i*50)# numéro
-        text(classement[i][1],width/2,height/2+i*50)# prénom
-        text(classement[i][2],width/2+250,height/2+i*50)# score
-        text(classement[i][3],width/2+450,height/2+i*50)# niveau
-    
+
     textAlign(CENTER)
     rectMode(CENTER)
     noStroke()
