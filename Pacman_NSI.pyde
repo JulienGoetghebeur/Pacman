@@ -37,7 +37,7 @@ nb_pieces_mange = 0
 nb_pastilles_mange = 0
 niveau = 1
 partie_en_cour = False
-nb_fantome_mange = 0
+compteur_fantome_mange = 0
 prochain_virage = "aucun"
 decompte = 4
 
@@ -50,7 +50,7 @@ font_titre = PFont()
 
 
 def setup():
-    global regles2,compteur_image,image_pacman,image_blinky,image_pinky,image_inky,image_clyde,image_fantomePeur,Pacman,Blinky,Pinky,Inky,Clyde,fantomes,font_ecriture,font_titre,image_pacman_d,image_pacman_g,image_pacman_b,image_pacman_h,regles,logo
+    global image_pause,regles2,compteur_image,image_pacman,image_blinky,image_pinky,image_inky,image_clyde,image_fantomePeur,Pacman,Blinky,Pinky,Inky,Clyde,fantomes,font_ecriture,font_titre,image_pacman_d,image_pacman_g,image_pacman_b,image_pacman_h,regles,logo
     
     size(TAILLE_GRILLE[0]*TAILLE_CASE+300,TAILLE_GRILLE[1]*TAILLE_CASE)
     frameRate(10)
@@ -59,7 +59,7 @@ def setup():
     textAlign(CENTER)
     imageMode(CENTER)
     noStroke()
-    
+    image_pause = loadImage("pacman-sleep.gif")
     regles = loadImage("regle-pacman2.png")
     logo = loadImage("pacman-logo.jpg")
     image_pacman = loadImage("pacman.png")
@@ -295,7 +295,7 @@ def collision(pacman,fantome) :
     - soit le pacman mange le fantome et il gagne des points
     - soit il meurt et tout les personnages respawn.
     """
-    global le_plus_fort,score,nb_fantome_mange
+    global le_plus_fort,score,compteur_fantome_mange,nb_fantomes_mange
     if le_plus_fort == "fantome" :
         pacman["vie"] -= 1
         pacman["x"] = 43
@@ -313,10 +313,11 @@ def collision(pacman,fantome) :
             pacman["vivant"] = False
          
     elif le_plus_fort == "pacman" :
-        nb_fantome_mange += 1
+        compteur_fantome_mange += 1
+        nb_fantomes_mange += 1
         fantome["vivant"] = False
         fantome_respawn(fantome)
-        score += (nb_fantome_mange+1)*100
+        score += (compteur_fantome_mange+1)*100
         
 
 def avancer_personnage(perso) :
@@ -463,9 +464,9 @@ def pastille_mange() :
     - les fantomes changent d'aparance
     - le compteur de fantome mangé est remis a 0 (est utilisé pour le nombre de point gagné)
     """
-    global le_plus_fort,fantomes,chrono,image_fantomePeur,nb_fantome_mange
+    global le_plus_fort,fantomes,chrono,image_fantomePeur,compteur_fantome_mange
     le_plus_fort = "pacman"
-    nb_fantome_mange = 0
+    compteur_fantome_mange = 0
     for i in fantomes :
         i["image"] = image_fantomePeur
     chrono = millis()
@@ -669,7 +670,7 @@ def afficher_bande():
     textSize(24)
     text(str(nb_pastilles_mange),TAILLE_GRILLE[0]*TAILLE_CASE+125,height/3-47)
     text(str(nb_pieces_mange),TAILLE_GRILLE[0]*TAILLE_CASE+125,height/3-7)
-    text(str(nb_fantome_mange),TAILLE_GRILLE[0]*TAILLE_CASE+125,height/3+33)
+    text(str(nb_fantomes_mange),TAILLE_GRILLE[0]*TAILLE_CASE+125,height/3+33)
 # nb de vie restante représenté par des icons pacman
     for i in range(1,Pacman["vie"]+1):
         image(image_pacman,TAILLE_GRILLE[0]*TAILLE_CASE+(i*40),150,32,32)
@@ -775,17 +776,20 @@ def ecran_titre():
 
 #     return clic
 def ecran_pause():
-    global clic
-    fill(50,50,255)
+    global clic,image_pause
+    fill(50,115,185)
     stroke(20)
     rect(width/2-150,height/2,400,400,30)
-    fill(255,0,0)
     noStroke()
-    text("PAUSE",width/2-150,height/2)
-    if bouton(width/2-150,height/2+100,270,60,'REPRENDRE',[100,232,132],[0,232,36]):
-        clic = 'JOUER'
-        affichage = "jeu"
+    image(image_pause,width/2-100,height/3+105,200,130)
+    fill(255,0,0)
+    textSize(50)
+    text("PAUSE",width/2-150,height/2-120,)
+    if bouton(width/2-150,height/2+70,270,60,'REPRENDRE',[100,232,132],[0,232,36]):
+        clic = 'REPRENDRE'
         return clic
+    if bouton(width/2-150,height/2+150,270,60,'QUITTER',[242,93,93],[255,0,0]):
+        exit()
 
 def ecran_fin() :
 
