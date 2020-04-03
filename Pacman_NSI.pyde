@@ -183,6 +183,7 @@ def compte_a_rebourd():
     afficher_grille(grille)
     afficher_pacman(Pacman)
     afficher_fantomes(fantomes)
+    afficher_bande()
     fill(255,0,0)
     textSize(40)
     text(str(decompte),TAILLE_GRILLE[0]*TAILLE_CASE/2,TAILLE_GRILLE[1]*TAILLE_CASE/2)
