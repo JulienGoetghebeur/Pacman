@@ -494,60 +494,79 @@ def deplacement_fantomes():
     - lorsque le fantome arrive a un carrefour, il choisi une direction
     - plus le fantome est proche du pacman, plus la probabilité qu'il choisisse sa direction est élevée :
         * entre 50 et 30 cases de distance -> 1 chance de plus d'aller vers le pacman
-        * entre 30 et 20 -> 2 chances de plus
-        * entre 20 et 10 -> 3 chances de plus 
-        * moins de 10 -> 5 chances de plus
+        * entre 30 et 20 -> 3 chances de plus
+        * entre 20 et 10 -> 5 chances de plus 
+        * moins de 10 -> 7 chances de plus
     """
     global fantomes,dir_poids,direction_possible
     for f in fantomes :
         direction_possible = ["haut", "bas", "droite", "gauche"]
         est_sur_carrefour = False
-        
+# Détecte si le fantome est sur un carrefour
         if f["direction"] == "droite" or f["direction"] == "gauche" :
             if est_bloque_up(f) == False or est_bloque_down(f) == False:
                 est_sur_carrefour = True
         else : 
             if est_bloque_right(f) == False or est_bloque_left(f) == False :
                 est_sur_carrefour = True
-        
+# Calcule le vecteur fantome->pacman
         if est_sur_carrefour == True :
             vers_pacman = (Pacman["x"] - f["x"],Pacman["y"] - f["y"])
-            # dir_poids = [1,1,1,1]
+# Si le pacman est à droite du fantome            
             if vers_pacman[0] > 0 :
-                if vers_pacman[0] < 20 or vers_pacman[1] < 20 :
-                    # dir_poids[2] += 2
+                if 30 < vers_pacman[0] < 50 or 30 < vers_pacman[1] < 50 :
                     direction_possible.append("droite")
+                elif 20 < vers_pacman[0] < 30 or 20 < vers_pacman[1] < 30 :
+                    for i in range(3):
+                        direction_possible.append("droite")
+                elif 10 < vers_pacman[0] < 20 or 10 < vers_pacman[1] < 20 :
+                    for i in range(5):
+                        direction_possible.append("droite")
                 elif vers_pacman[0] < 10 or vers_pacman[1] < 10 :
-                    direction_possible.append("droite")
-                    direction_possible.append("droite")
-            elif vers_pacman[0] < 0 :
-                if vers_pacman[0] < 20 or vers_pacman[1] < 20 :
-                    # dir_poids[3] += 2
+                    for i in range(7):
+                        direction_possible.append("droite")
+# Si le pacman est à gauche du fantome
+            if vers_pacman[0] < 0 :
+                if -50 < vers_pacman[0] < -30 or -50 < vers_pacman[1] < -30 :
                     direction_possible.append("gauche")
-                elif vers_pacman[0] < 10 or vers_pacman[1] < 10 :
-                    direction_possible.append("gauche")
-                    direction_possible.append("gauche")
+                elif -30 < vers_pacman[0] < -20 or -30 < vers_pacman[1] < -20 :
+                    for i in range(3):
+                        direction_possible.append("gauche")
+                elif -20 < vers_pacman[0] < -10 or -20 < vers_pacman[1] < -10 :
+                    for i in range(5):
+                        direction_possible.append("gauche")
+                elif -10 < vers_pacman[0] or -10 < vers_pacman[1] :
+                    for i in range(7):
+                        direction_possible.append("gauche")
+# Si le pacman est en dessous du fantome
             if vers_pacman[1] > 0 :
-                if vers_pacman[0] < 20 or vers_pacman[1] < 20 :
-                    # dir_poids[1] += 2
+                if 30 < vers_pacman[0] < 50 or 30 < vers_pacman[1] < 50 :
                     direction_possible.append("bas")
+                elif 20 < vers_pacman[0] < 30 or 20 < vers_pacman[1] < 30 :
+                    for i in range(3):
+                        direction_possible.append("bas")
+                elif 10 < vers_pacman[0] < 20 or 10 < vers_pacman[1] < 20 :
+                    for i in range(5):
+                        direction_possible.append("bas")
                 elif vers_pacman[0] < 10 or vers_pacman[1] < 10 :
-                    direction_possible.append("bas")
-                    direction_possible.append("bas")
-            elif vers_pacman[1] < 0 :
-                if vers_pacman[0] < 20 or vers_pacman[1] < 20 :
-                    # dir_poids[0] += 2
+                    for i in range(7):
+                        direction_possible.append("bas")
+# Si le pacman est au dessus du fantome
+            if vers_pacman[1] < 0 :
+                if -50 < vers_pacman[0] < -30 or -50 < vers_pacman[1] < -30 :
                     direction_possible.append("haut")
-                elif vers_pacman[0] < 10 or vers_pacman[1] < 10 :
-                    direction_possible.append("haut")
-                    direction_possible.append("haut")
-                    
+                elif -30 < vers_pacman[0] < -20 or -30 < vers_pacman[1] < -20 :
+                    for i in range(3):
+                        direction_possible.append("haut")
+                elif -20 < vers_pacman[0] < -10 or -20 < vers_pacman[1] < -10 :
+                    for i in range(5):
+                        direction_possible.append("haut")
+                elif -10 < vers_pacman[0] or -10 < vers_pacman[1] :
+                    for i in range(7):
+                        direction_possible.append("haut")    
             f["direction"] = choice(direction_possible)    
-            # f["direction"] = choices(direction_possible, weights = dir_poids, k= 1)
         while est_bloque_front(f):
-            # f["direction"] = choices(direction_possible, weights = dir_poids, k= 1)
             f["direction"] = choice(direction_possible)
-            
         avancer_personnage(f)
 
 def fantome_respawn(f) :
@@ -717,66 +736,20 @@ def ecran_titre():
         text(classement[i][1],width/2,height/2+i*50)# prénom
         text(classement[i][2],width/2+250,height/2+i*50)# score
         text(classement[i][3],width/2+450,height/2+i*50)# niveau
+    textAlign(CENTER)
+    rectMode(CENTER)
 # règles
     image(regles,220,height/2+30,330,400)
 #logo
     image(logo,width/2,height/2-90,300,100)
-    textAlign(CENTER)
-    rectMode(CENTER)
+    
     return clic
 
-# def ecran_pause():
-#     """
-#     Fonction qui affiche un écran de pause sur la grille de jeu.
-#     - boutons QUITTER et CONTINUER
-#     """
-#     fill(255,0,0)
-#     text("PAUSE",width/2,height/2)
-
-# def ecran_fin() :
-#     """
-#     Fonction qui affiche un écran de fin de partie.
-#     - Affiche le score
-#     - affiche le classement
-#     - boutons QUITTER et REJOUER
-#     """
-#     background(0)
-#     clic = ''
-# # Titre
-#     textSize(90)
-#     fill(255)
-#     text("GAME OVER",width/2,180)
-# # Boutons
-#     stroke(0,232,36)
-#     if bouton(200,height-130,220,60,'REJOUER',[100,232,132],[0,232,36]) ==True:
-#         clic = 'REJOUER'
-#     stroke(255,0,0)
-#     if bouton(800,height-130,220,60,'QUITTER',[255,100,100],[255,0,0]) == True :
-#         clic = 'QUITTER'
-# # tableau des score
-#     textAlign(LEFT)
-#     rectMode(CORNER)
-    
-#     fill(0)
-#     stroke(0)
-#     fill(20,0,255)
-#     rect(width/3-50,height/3,500,350,30)
-#     fill(255,255,20)
-#     text("tableau des scores",width/2-190,height/2-150)
-    
-#     fill(255)
-#     for i in range(len(classement)) :
-#         text(classement[i][0],width/2-50,height/2+i*50)# numéro
-#         text(classement[i][1],width/2,height/2+i*50)# prénom
-#         text(classement[i][2],width/2+250,height/2+i*50)# score
-#         text(classement[i][3],width/2+450,height/2+i*50)# niveau
-    
-#     textAlign(CENTER)
-#     rectMode(CENTER)
-#     noStroke()
-
-#     return clic
 def ecran_pause():
+    """
+    Fonction qui affiche un écran de pause sur la grille de jeu.
+    - boutons QUITTER et CONTINUER
+    """
     global clic,image_pause
     fill(50,115,185)
     stroke(20)
@@ -793,7 +766,14 @@ def ecran_pause():
         exit()
 
 def ecran_fin() :
-
+    """
+    Fonction qui affiche un écran de fin de partie.
+    - Affiche le score
+    - affiche le classement
+    - boutons QUITTER et REJOUER
+    """
+    global classement,font_ecriture
+    textFont(font_ecriture)
     background(0)
     clic = ''
     textSize(90)
@@ -801,26 +781,28 @@ def ecran_fin() :
     text("GAME OVER",width/2,180)
 # Boutons
     stroke(0,232,36)
-    if bouton(150,height-400,220,60,'REJOUER',[100,232,132],[0,232,36]) ==True:
+    if bouton(200,height-100,220,60,'REJOUER',[100,232,132],[0,232,36]):
         clic = 'REJOUER'
     stroke(255,0,0)
-    if bouton(150,height-200,220,60,'QUITTER',[255,100,100],[255,0,0]) == True :
+    if bouton(480,height-100,220,60,'QUITTER',[255,100,100],[255,0,0]):
         clic = 'QUITTER'
 # tableau des score
     textAlign(LEFT)
-    rectMode(CORNER)
-
     fill(0)
     stroke(0)
     fill(20,0,255)
-    rect(width/3-50,height/3,500,350,30)
+    rect(width/2,height/2+50,600,350,30)
     fill(255,255,20)
     text("tableau des scores",width/2-190,height/2-150)
-
+    for i in range(len(classement)) :
+        fill(255)
+        text(classement[i][0],width/2-270,height/2-70+i*65)# numéro
+        text(classement[i][1],width/2-220,height/2-70+i*65)# prénom
+        text(classement[i][2],width/2+60,height/2-70+i*65)# score
+        text(classement[i][3],width/2+260,height/2-70+i*65)# niveau
     textAlign(CENTER)
     rectMode(CENTER)
     noStroke()
-
     return clic
 
 def ecran_record_battu():
@@ -836,11 +818,12 @@ def ecran_record_battu():
     textSize(80)
     fill(255,255,0)
     text("RECORD BATTU !!", width/2, 180)
-    textSize(30)
+    textSize(40)
     fill(255)
     text("score : " + str(score),width/2,height/3+50)
-    text("Entrez votre nom",width/2,height/2)
-    text("pour enregistrer votre score.",width/2,height/2+50)
+    textSize(30)
+    text("Entrez votre nom\npour enregistrer votre score",width/2,height/2)
+    #text("pour enregistrer votre score.",width/2,height/2+50)
 # Case pour entrer le nom
     noFill()
     stroke(255)
